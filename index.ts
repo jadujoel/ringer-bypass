@@ -62,7 +62,7 @@ class Silence {
           silence.audio.volume = 0.001;
           silence.source.start();
           silence.audio.play();
-          silence.view.textContent = "Dispose Silence";
+          silence.view.textContent = "Stop Silence";
           silence.state = "playing"
           return
         }
@@ -70,12 +70,10 @@ class Silence {
           silence.source.stop();
           silence.audio.pause();
           silence.state = "stopped"
-          silence.view.textContent = "Stop Silence";
+          silence.view.textContent = "Dispose Silence";
           return
         }
         case "stopped": {
-          silence.source.stop();
-          silence.audio.pause();
           silence.audio.srcObject = null;
           silence.audio.remove()
           silence.view.textContent = "Play Silence";
