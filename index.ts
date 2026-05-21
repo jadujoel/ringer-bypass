@@ -53,6 +53,7 @@ class Silence {
     silence.view.textContent = "Play Silence";
     silence.view.addEventListener("click", () => {
       if (silence.state === "disposed") {
+        silence.state = "stopped"
         return
       }
       if (silence.state === "playing") {
@@ -64,6 +65,7 @@ class Silence {
         return
       }
       const output = context.createMediaStreamDestination();
+      silence.source = context.createConstantSource();
       silence.source.connect(output);
       silence.audio.srcObject = output.stream;
       silence.audio.volume = 0.001;
