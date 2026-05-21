@@ -76,6 +76,7 @@ class Silence {
         case "stopped": {
           silence.audio.srcObject = null;
           silence.audio.remove()
+          silence.source.disconnect();
           silence.view.textContent = "Play Silence";
           silence.state = "removed"
           return
