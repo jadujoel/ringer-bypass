@@ -29,7 +29,7 @@ class SilenceModel {
     this.source.offset.value = 0.000;
     this.source.connect(output);
     this.audio.srcObject = output.stream;
-    this.audio.volume = 0.001;
+    this.audio.volume = 0.000;
     this.source.start();
     this.audio.play();
     this.state = "playing";
