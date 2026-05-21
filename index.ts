@@ -20,15 +20,15 @@ type SilenceState = "playing" | "stopped";
 class SilenceModel {
   state: SilenceState = "stopped";
   source: ConstantSourceNode = context.createConstantSource();
+  output: MediaStreamAudioDestinationNode = context.createMediaStreamDestination();
   audio: HTMLAudioElement = new Audio();
 
   play() {
-    const output = context.createMediaStreamDestination();
     this.audio = new Audio();
     this.source = context.createConstantSource();
     this.source.offset.value = 0.000;
-    this.source.connect(output);
-    this.audio.srcObject = output.stream;
+    this.source.connect(this.output);
+    this.audio.srcObject = this.output.stream;
     this.audio.volume = 0.000;
     this.source.start();
     this.audio.play();
