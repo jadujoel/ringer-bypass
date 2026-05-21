@@ -54,6 +54,7 @@ class Silence {
     silence.view.addEventListener("click", () => {
       if (silence.state === "disposed") {
         silence.state = "stopped"
+        silence.view.textContent = "Play Silence";
         return
       }
       if (silence.state === "playing") {
