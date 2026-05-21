@@ -52,9 +52,7 @@ const views = {
       return s === "playing" ? "Stop Silence" : "Play Silence"
     }
   }
-
 }
-
 const controllers = {
   mount: {
     oscillator(parent: HTMLElement) {
