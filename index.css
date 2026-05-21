@@ -1,0 +1,11 @@
+* {
+  background: #303030;
+  color: #fff;
+}
+
+button {
+  font-size: 1.5em;
+  padding: 1em;
+  margin: 1em;
+  background: #505050;
+}
