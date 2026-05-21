@@ -36,10 +36,10 @@ class SilenceModel {
   }
   stop() {
     this.source.stop();
+    this.source.disconnect();
     this.audio.pause();
     this.audio.srcObject = null;
     this.audio.remove();
-    this.source.disconnect();
     this.state = "stopped";
   }
 }
