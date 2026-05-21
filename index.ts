@@ -1,92 +1,99 @@
 
-const context = new AudioContext({ latencyHint: "playback", sampleRate: 48_000 });
-
 type OscillatorState = "playing" | "stopped";
-interface View {
-  addEventListener: (event: "click", callback: () => void) => void;
-  textContent: string;
-}
-class Oscillator {
-  private constructor(
-    public view: View = document.createElement("button"),
-    public state: OscillatorState = "stopped",
-    public source: OscillatorNode = context.createOscillator()
-  ) {}
+class OscillatorModel {
+  state: OscillatorState = "stopped";
+  source: OscillatorNode = context.createOscillator();
 
   play() {
     this.source = context.createOscillator();
     this.source.connect(context.destination);
     this.source.start();
-    this.view.textContent = "Stop Oscillator";
-    this.state = "playing"
+    this.state = "playing";
   }
   stop() {
     this.source.stop();
-    this.view.textContent = "Play Oscillator";
-    this.state = "stopped"
-  }
-  static default(): Oscillator {
-    const osc = new Oscillator();
-    osc.view.textContent = "Play Oscillator";
-    osc.view.addEventListener("click", () => {
-      if (osc.state === "playing") {
-        osc.stop();
-        return
-      } else if (osc.state === "stopped") {
-        osc.play();
-      }
-    });
-    return osc;
+    this.state = "stopped";
   }
 }
 
 type SilenceState = "playing" | "stopped";
-class Silence {
-  private constructor(
-    public state: SilenceState = "stopped",
-    public view: View = document.createElement("button"),
-    public source: ConstantSourceNode = context.createConstantSource(),
-    public audio: HTMLAudioElement = new Audio()
-  ) {}
-  static default(): Silence {
-    const silence = new Silence();
-    silence.view.textContent = "Play Silence";
-    silence.view.addEventListener("click", () => {
-      switch (silence.state) {
-        case "stopped": {
-          const output = context.createMediaStreamDestination();
-          silence.audio = new Audio();
-          silence.source = context.createConstantSource();
-          silence.source.connect(output);
-          silence.audio.srcObject = output.stream;
-          silence.audio.volume = 0.001;
-          silence.source.start();
-          silence.audio.play();
+class SilenceModel {
+  state: SilenceState = "stopped";
+  source: ConstantSourceNode = context.createConstantSource();
+  audio: HTMLAudioElement = new Audio();
 
-          silence.state = "playing"
-          silence.view.textContent = "Stop Silence";
-          return
-        }
-        case "playing": {
-          silence.source.stop();
-          silence.audio.pause();
-          silence.state = "stopped"
-          silence.audio.srcObject = null;
-          silence.audio.remove()
-          silence.source.disconnect();
-
-          silence.state = "stopped"
-          silence.view.textContent = "Play Silence";
-          return
-        }
-      }
-    });
-    return silence
+  play() {
+    const output = context.createMediaStreamDestination();
+    this.audio = new Audio();
+    this.source = context.createConstantSource();
+    this.source.connect(output);
+    this.audio.srcObject = output.stream;
+    this.audio.volume = 0.001;
+    this.source.start();
+    this.audio.play();
+    this.state = "playing";
+  }
+  stop() {
+    this.source.stop();
+    this.audio.pause();
+    this.audio.srcObject = null;
+    this.audio.remove();
+    this.source.disconnect();
+    this.state = "stopped";
   }
 }
 
-const osc = Oscillator.default();
-const silence = Silence.default();
+const views = {
+  labels: {
+    oscillator(s: OscillatorState): string {
+      return s === "playing" ? "Stop Oscillator" : "Play Oscillator"
+    },
+    silence(s: SilenceState): string {
+      return s === "playing" ? "Stop Silence" : "Play Silence"
+    }
+  }
 
-document.body.appendChild(osc.view as HTMLElement);
-document.body.appendChild(silence.view as HTMLElement);
+}
+
+const controllers = {
+  mount: {
+    oscillator(parent: HTMLElement) {
+      const model = new OscillatorModel();
+      const view = document.createElement("button");
+      const render = () => {
+        view.textContent = views.labels.oscillator(model.state);
+      };
+      view.addEventListener("click", () => {
+        if (model.state === "playing") {
+          model.stop();
+        } else {
+          model.play();
+        }
+        render();
+      });
+      render();
+      parent.appendChild(view);
+    },
+    silence(parent: HTMLElement) {
+      const model = new SilenceModel();
+      const view = document.createElement("button");
+      const render = () => {
+        view.textContent = views.labels.silence(model.state);
+      };
+      view.addEventListener("click", () => {
+        if (model.state === "playing") {
+          model.stop();
+        } else {
+          model.play();
+        }
+        render();
+      });
+      render();
+      parent.appendChild(view);
+    },
+  }
+}
+
+const context = new AudioContext({ latencyHint: "playback", sampleRate: 48_000 });
+controllers.mount.oscillator(document.body);
+controllers.mount.silence(document.body);
