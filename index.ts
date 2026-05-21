@@ -40,10 +40,10 @@ class Oscillator {
   }
 }
 
-type SilenceState = "playing" | "stopped" | "removed";
+type SilenceState = "playing" | "stopped";
 class Silence {
   private constructor(
-    public state: SilenceState = "removed",
+    public state: SilenceState = "stopped",
     public view: View = document.createElement("button"),
     public source: ConstantSourceNode = context.createConstantSource(),
     public audio: HTMLAudioElement = new Audio()
@@ -53,7 +53,7 @@ class Silence {
     silence.view.textContent = "Play Silence";
     silence.view.addEventListener("click", () => {
       switch (silence.state) {
-        case "removed": {
+        case "stopped": {
           const output = context.createMediaStreamDestination();
           silence.audio = new Audio();
           silence.source = context.createConstantSource();
@@ -71,14 +71,11 @@ class Silence {
           silence.audio.pause();
           silence.state = "stopped"
           silence.view.textContent = "Dispose Silence";
-          return
-        }
-        case "stopped": {
           silence.audio.srcObject = null;
           silence.audio.remove()
           silence.source.disconnect();
           silence.view.textContent = "Play Silence";
-          silence.state = "removed"
+          silence.state = "stopped"
           return
         }
       }
