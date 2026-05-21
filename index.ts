@@ -63,6 +63,7 @@ class Silence {
         silence.audio.play();
         silence.view.textContent = "Dispose Silence";
         silence.state = "playing"
+        return
       }
       if (silence.state === "playing") {
         silence.source.stop();
