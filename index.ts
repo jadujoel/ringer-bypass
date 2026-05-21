@@ -40,10 +40,10 @@ class Oscillator {
   }
 }
 
-type SilenceState = "playing" | "stopped" | "disposed";
+type SilenceState = "playing" | "stopped" | "removed";
 class Silence {
   private constructor(
-    public state: SilenceState = "stopped",
+    public state: SilenceState = "removed",
     public view: View = document.createElement("button"),
     public source: ConstantSourceNode = context.createConstantSource(),
     public audio: HTMLAudioElement = new Audio()
@@ -52,28 +52,34 @@ class Silence {
     const silence = new Silence();
     silence.view.textContent = "Play Silence";
     silence.view.addEventListener("click", () => {
-      if (silence.state === "disposed") {
-        silence.state = "stopped"
-        silence.view.textContent = "Play Silence";
-        return
+      if (silence.state === "removed") {
+        const output = context.createMediaStreamDestination();
+        silence.audio = new Audio();
+        silence.source = context.createConstantSource();
+        silence.source.connect(output);
+        silence.audio.srcObject = output.stream;
+        silence.audio.volume = 0.001;
+        silence.source.start();
+        silence.audio.play();
+        silence.view.textContent = "Dispose Silence";
+        silence.state = "playing"
       }
       if (silence.state === "playing") {
         silence.source.stop();
         silence.audio.pause();
-        silence.audio.remove()
-        silence.view.textContent = "Silence Disposed";
-        silence.state = "disposed"
+        silence.state = "stopped"
+        silence.view.textContent = "Stop Silence";
         return
       }
-      const output = context.createMediaStreamDestination();
-      silence.source = context.createConstantSource();
-      silence.source.connect(output);
-      silence.audio.srcObject = output.stream;
-      silence.audio.volume = 0.001;
-      silence.source.start();
-      silence.audio.play();
-      silence.view.textContent = "Dispose Silence";
-      silence.state = "playing"
+      if (silence.state === "stopped") {
+        silence.source.stop();
+        silence.audio.pause();
+        silence.audio.srcObject = null;
+        silence.audio.remove()
+        silence.view.textContent = "Play Silence";
+        silence.state = "removed"
+        return
+      }
     });
     return silence
   }
